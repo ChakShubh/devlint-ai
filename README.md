@@ -1,2 +1,46 @@
-# devlint-ai
-Real-time developer security linter &amp; syntax explainer for Bash, Dockerfiles, and Regex using AWS Lambda (Python 3.14), Amazon Bedrock (Nova Micro), and AWS Amplify.
+# DevLint AI 🛡️⚡
+
+> Real-time developer security linter and plain-English syntax explainer for Shell scripts, Dockerfiles, and Regular Expressions. Built on AWS serverless primitives.
+
+---
+
+## 🌟 Overview
+
+Developers frequently encounter complex shell one-liners, unverified Dockerfiles, or dense regular expressions. Running or committing these snippets without a line-by-line understanding introduces severe security risks—ranging from command injection and privilege escalation to ReDoS (Regular Expression Denial of Service).
+
+**DevLint AI** provides an instant, zero-setup diagnostic workspace where developers can inspect snippets to receive:
+* **Deterministic Security Audits:** Identification of dangerous execution patterns, unquoted variables, unpinned images, and ReDoS vulnerabilities.
+* **Plain-English Explanations:** Sequential breakdowns of cryptic syntax tokens and command flags.
+* **Automated Sanitized Fixes:** Ready-to-copy hardened alternatives implementing least-privilege standards.
+* **Safety Scoring:** Immediate 0–100 safety indexing with actionable verdicts (`SECURE`, `CAUTION`, `DANGEROUS`).
+
+---
+
+## 🏗️ Architecture
+
+```text
+┌────────────────────────────────────────────────────────┐
+│                   AWS Amplify Hosting                  │
+│       (Glassmorphic Vanilla Single-Page App)           │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           │ 1. HTTPS POST (JSON snippet payload)
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│               AWS Lambda (Python 3.14)                 │
+│         (DevLint-Engine + Lambda Function URL)         │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           │ 2. Parameter Sanitization & Prompt Contract
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│               Amazon Bedrock Runtime                   │
+│             (amazon.nova-micro-v1:0)                   │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           │ 3. Structured JSON Schema Verdict
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│                  Amplify Frontend UI                   │
+│        (Instant Verdict, Dissection, & Fix Display)    │
+└────────────────────────────────────────────────────────┘
