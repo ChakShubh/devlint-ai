@@ -6,7 +6,7 @@
 
 ## Overview
 
-Developers frequently encounter complex shell one-liners, unverified Dockerfiles, or dense regular expressions. Running or committing these snippets without a line-by-line understanding introduces severe security risks—ranging from command injection and privilege escalation to ReDoS (Regular Expression Denial of Service).
+Developers frequently encounter complex shell one-liners, unverified Dockerfiles, or dense regular expressions. Running or committing these snippets without a line-by-line understanding introduces severe security risks-ranging from command injection and privilege escalation to ReDoS (Regular Expression Denial of Service).
 
 **DevLint AI** provides an instant, zero-setup diagnostic workspace where developers can inspect snippets to receive:
 * **Deterministic Security Audits:** Identification of dangerous execution patterns, unquoted variables, unpinned images, and ReDoS vulnerabilities.
