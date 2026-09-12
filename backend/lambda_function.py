@@ -193,7 +193,6 @@ def lambda_handler(event, context):
         elif heuristic_verdict == "CAUTION" and verdict == "SECURE":
             verdict = "CAUTION"
 
-        # FOOLPROOF CLAMP: It is mathematically impossible to return 0 or misaligned scores now
         score = int(parsed_audit.get("safety_score", 50))
         
         if verdict == "DANGEROUS":
