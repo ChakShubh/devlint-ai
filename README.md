@@ -1,4 +1,4 @@
-# DevLint AI 🛡️⚡
+# DevLint AI
 
 > Real-time developer security linter and plain-English syntax explainer for Shell scripts, Dockerfiles, and Regular Expressions. Built on AWS serverless primitives.
 
