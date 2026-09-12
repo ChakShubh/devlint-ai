@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevLint AI | Shell, Dockerfile & Regex Security Sanitizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090c15;
+      --card: rgba(17, 24, 39, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .wrapper { max-width: 960px; width: 100%; }
+    header { text-align: center; margin-bottom: 2rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      margin-bottom: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    p.tagline { color: var(--muted); font-size: 1.05rem; }
+
+    .editor-container {
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      margin-bottom: 2rem;
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 0.45rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+      color: #fff;
+    }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      background: #05070d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 1rem;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+
+    .actions { display: flex; justify-content: space-between; align-items: center; }
+    .btn-submit {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.8rem;
+      border-radius: 0.6rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #spinner {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 0;
+    }
+
+    .loader {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(99, 102, 241, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #audit-result { display: none; }
+
+    .verdict-header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .verdict-tag {
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .SECURE { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .CAUTION { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.4); }
+    .DANGEROUS { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .score-badge {
+      font-size: 2.5rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .finding-item {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 4px solid var(--accent);
+      border-radius: 0.4rem;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .finding-item.CRITICAL { border-left-color: var(--danger); }
+    .finding-item.WARNING { border-left-color: var(--warning); }
+    .finding-item.INFO { border-left-color: #3b82f6; }
+
+    .finding-title { font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .finding-detail { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+
+    .code-box {
+      background: #05070d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #93c5fd;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    ol.step-list { padding-left: 1.25rem; color: #d1d5db; font-size: 0.9rem; line-height: 1.6; }
+    ol.step-list li { margin-bottom: 0.5rem; }
+
+    footer {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.85rem;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="badge">⚡ Powered by Amazon Bedrock (Nova Micro)</div>
+      <h1>DevLint AI</h1>
+      <p class="tagline">Instant security linting, semantic explanation, and sanitization for Shell, Dockerfile, and Regex snippets.</p>
+    </header>
+
+    <div class="editor-container">
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="setType('shell', this)">Bash / Shell</button>
+        <button class="tab-btn" onclick="setType('dockerfile', this)">Dockerfile</button>
+        <button class="tab-btn" onclick="setType('regex', this)">Regular Expression</button>
+      </div>
+
+      <textarea id="snippetInput" placeholder="Paste your bash one-liner, regex, or Dockerfile block here..."></textarea>
+
+      <div class="actions">
+        <span style="font-size: 0.8rem; color: var(--muted);">Analyzed at sub-second latency on AWS Lambda</span>
+        <button class="btn-submit" id="submitBtn" onclick="runLint()">Analyze & Sanitize</button>
+      </div>
+    </div>
+
+    <div id="spinner">
+      <div class="loader"></div>
+      <p style="color: #a5b4fc; font-weight: 500;">Auditing syntax tokens and querying Nova Micro model...</p>
+    </div>
+
+    <div id="audit-result">
+      <div class="verdict-header">
+        <div>
+          <span class="verdict-tag" id="verdictBadge">SECURE</span>
+          <p id="summaryText" style="color: #cbd5e1; font-size: 0.95rem; margin-top: 0.6rem; max-width: 650px;"></p>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Safety Score</div>
+          <div class="score-badge" id="safetyScore">--</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h3>🛡️ Security Findings</h3>
+        <div id="findingsList"></div>
+      </div>
+
+      <div class="section-card">
+        <h3>📖 Plain-English Breakdown</h3>
+        <ol class="step-list" id="stepList"></ol>
+      </div>
+
+      <div class="section-card">
+        <h3>✨ Sanitized & Hardened Implementation</h3>
+        <div class="code-box" id="sanitizedCode"></div>
+      </div>
+    </div>
+
+    <footer>
+      DevLint AI &bull; Built for the AWS Builder Center Weekend Deployment Challenge &bull; Serverless AWS Stack
+    </footer>
+  </div>
+
+  <script>
+    // Paste your Lambda Function URL here:
+    const LAMBDA_URL = "YOUR_LAMBDA_FUNCTION_URL_HERE";
+
+    let selectedType = "shell";
+
+    function setType(type, el) {
+      selectedType = type;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    async function runLint() {
+      const content = document.getElementById("snippetInput").value.trim();
+      const btn = document.getElementById("submitBtn");
+      const spinner = document.getElementById("spinner");
+      const resultArea = document.getElementById("audit-result");
+
+      if (!content) {
+        alert("Please paste a snippet to inspect.");
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = "block";
+      resultArea.style.display = "none";
+
+      try {
+        const res = await fetch(LAMBDA_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: selectedType, content: content })
+        });
+
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        const data = await res.json();
+
+        // Populate Verdict & Score
+        const verdictBadge = document.getElementById("verdictBadge");
+        verdictBadge.textContent = data.verdict || "REVIEW";
+        verdictBadge.className = `verdict-tag ${data.verdict || 'CAUTION'}`;
+        document.getElementById("safetyScore").textContent = data.safety_score || 0;
+        document.getElementById("summaryText").textContent = data.summary || "";
+
+        // Populate Findings
+        const findingsList = document.getElementById("findingsList");
+        findingsList.innerHTML = "";
+        (data.security_findings || []).forEach(f => {
+          findingsList.innerHTML += `
+            <div class="finding-item ${f.severity}">
+              <div class="finding-title">[${f.severity}] ${escapeHtml(f.issue)}</div>
+              <div class="finding-detail">${escapeHtml(f.detail)}</div>
+            </div>
+          `;
+        });
+
+        // Populate Steps
+        const stepList = document.getElementById("stepList");
+        stepList.innerHTML = "";
+        (data.step_by_step_explanation || []).forEach(s => {
+          stepList.innerHTML += `<li>${escapeHtml(s)}</li>`;
+        });
+
+        // Populate Sanitized Code
+        document.getElementById("sanitizedCode").textContent = data.sanitized_snippet || "";
+
+        resultArea.style.display = "block";
+      } catch (err) {
+        alert("Linting failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = "none";
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>

@@ -5,9 +5,10 @@ __pycache__/
 .venv/
 env/
 venv/
+.env
 
-# Environment / IDE
+# Environments
 .DS_Store
 .vscode/
 .idea/
-*.env
+*.log
